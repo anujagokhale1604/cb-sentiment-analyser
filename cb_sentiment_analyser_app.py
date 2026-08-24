@@ -40,8 +40,8 @@ st.markdown("""
     padding: 1rem 1.2rem; border-radius: 2px; font-family: 'IBM Plex Mono', monospace;
     font-size: 0.78rem; color: #0d1b2e; line-height: 1.7; margin: 0.5rem 0;
 }
-.hawk-box { border-left-color: #c0392b !important; }
-.dove-box { border-left-color: #1a6b3c !important; }
+.hawk-box { border-left-color: #c0392b !important; background: #fdf0ee !important; }
+.dove-box { border-left-color: #1a6b3c !important; background: #eef6f0 !important; }
 .footer-bar { border-top: 2px solid #1a1a1a; padding-top: 0.6rem; color: #5a6a7a; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; margin-top: 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
@@ -210,8 +210,38 @@ st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
+# ── EXPLAINER ────────────────────────────────────────────────────────────────
+st.markdown("<div class='section-header'>[ 03 ] What Do These Scores Mean in Practice?</div>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.markdown("""
+<div class='dcp-box'>
+<b style='color:#c0392b;'>🦅 Hawkish (Score > +30)</b><br><br>
+The central bank is prioritising <b>inflation control</b> over growth. Expect rate hikes or tighter policy ahead. For investors: bonds sell off, currency strengthens. For workers: borrowing costs rise, real wages face pressure if inflation stays high. The 2022 Fed and BoE were deeply hawkish — UK workers lost real wages for two consecutive years.
+</div>
+""", unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+<div class='dcp-box'>
+<b style='color:#0d3b7a;'>⚖ Neutral (Score -10 to +10)</b><br><br>
+The central bank is in <b>wait and see</b> mode. Policy is on hold, watching incoming data. Neither hiking nor cutting is imminent. This is where MAS sat through 2023-2024 after its aggressive 2022 tightening cycle — the S$NEER was kept at its appreciated level, doing the work passively without further adjustments.
+</div>
+""", unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+<div class='dcp-box'>
+<b style='color:#1a6b3c;'>🕊 Dovish (Score < -30)</b><br><br>
+The central bank is prioritising <b>growth and employment</b> over inflation control. Expect rate cuts or looser policy. For investors: bonds rally, currency weakens. For workers: borrowing is cheaper but inflation may creep up. The RBI's mid-2025 shift to accommodative stance signals growth concerns are now dominant over inflation fears.
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+
 # ── ANALYSER ──────────────────────────────────────────────────────────────────
-st.markdown("<div class='section-header'>[ 03 ] Analyse Any Statement — Paste Text Below</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'>[ 04 ] Analyse Any Statement — Paste Text Below</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([2,1])
 with col1:
@@ -244,7 +274,7 @@ with col2:
 st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
 # ── STATEMENT BROWSER ──────────────────────────────────────────────────────────
-st.markdown("<div class='section-header'>[ 04 ] Browse All Statements</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'>[ 05 ] Browse All Statements</div>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
@@ -264,7 +294,7 @@ st.dataframe(display, use_container_width=True, height=280)
 st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
 # ── MAS CONNECTION ──────────────────────────────────────────────────────────────
-st.markdown("<div class='section-header'>[ 05 ] The MAS Difference — Exchange Rate vs Interest Rate Signalling</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-header'>[ 06 ] The MAS Difference — Exchange Rate vs Interest Rate Signalling</div>", unsafe_allow_html=True)
 st.markdown("""
 <div class='statement-box'>
 Standard central bank sentiment analysis was built for interest rate frameworks — the Fed, BoE, and ECB signal through words like "raise", "lower", "restrictive", and "accommodate". MAS signals differently: through S$NEER band adjustments (slope, width, centring). A MAS statement can be deeply hawkish without mentioning "raise" or "inflation" in conventional ways.<br><br>
