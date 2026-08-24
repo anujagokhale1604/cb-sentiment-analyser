@@ -278,12 +278,26 @@ with col2:
             score, hawk, dove = score_statement(user_text)
             lbl, col = label(score)
             box_class = 'hawk-box' if score > 10 else 'dove-box' if score < -10 else ''
+            if score > 30:
+                plain = "Rates likely rising. Borrowing gets more expensive."
+            elif score > 10:
+                plain = "Leaning toward tighter policy. No immediate hike but watch this space."
+            elif score > -10:
+                plain = "On hold. Watching data before making a move."
+            elif score > -30:
+                plain = "Leaning toward easier policy. Rate cuts possible ahead."
+            else:
+                plain = "Rates likely falling. Borrowing gets cheaper."
+
             st.markdown(f"""
             <div class='statement-box {box_class}'>
             <b>Verdict:</b> <span style='color:{col};font-weight:700;'>{lbl}</span><br>
             <b>Score:</b> {score:+.1f} / 100<br>
-            <b>Hawkish signals:</b> {hawk} · <b>Dovish signals:</b> {dove}<br><br>
-            
+            <b>Hawkish signals:</b> {hawk} · <b>Dovish signals:</b> {dove}
+            <div style='margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid #d0ccc4;
+                        color:#0d1b2e;font-size:0.82rem;font-style:italic;font-weight:500;'>
+            {plain}
+            </div>
             </div>
             """, unsafe_allow_html=True)
         else:
