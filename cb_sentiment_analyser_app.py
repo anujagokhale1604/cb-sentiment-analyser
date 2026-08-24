@@ -325,6 +325,6 @@ st.markdown("""
 <div class='footer-bar'>
 Built by Anuja A. Gokhale · MA Applied Economics, NUS (Merit Scholar) · anujagokhale1604@gmail.com · 
 Methodology: custom hawkish/dovish lexicon (70 terms) + TextBlob sentiment analysis (30%) · 
-Statements sourced from official central bank publications 
+Statements sourced from official central bank publications · August 2026
 </div>
 """, unsafe_allow_html=True)
