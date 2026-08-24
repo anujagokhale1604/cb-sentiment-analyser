@@ -11,38 +11,38 @@ st.set_page_config(page_title="CB Sentiment Analyser", page_icon="🏦", layout=
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
-.stApp { background-color: #f5f0e8; color: #1a1a1a; font-family: 'IBM Plex Sans', sans-serif; }
+.stApp { background-color: #faf8f4; color: #0d1b2e; font-family: 'IBM Plex Sans', sans-serif; }
 .main .block-container { padding: 1.5rem 2.5rem; max-width: 1400px; }
 [data-testid="metric-container"] {
-    background: #ede8dd; border: 1px solid #c8bfaa;
-    border-top: 3px solid #1e5fb4; padding: 1rem; border-radius: 2px;
+    background: #f0ece4; border: 1px solid #d0ccc4;
+    border-top: 3px solid #0d3b7a; padding: 1rem; border-radius: 2px;
 }
 [data-testid="metric-container"] label {
-    color: #5a5040 !important; font-size: 0.65rem !important;
+    color: #3a4a5a !important; font-size: 0.65rem !important;
     text-transform: uppercase; letter-spacing: 0.12em;
     font-family: 'IBM Plex Mono', monospace !important;
 }
 [data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #1a1a1a !important; font-size: 1.4rem !important;
+    color: #0d1b2e !important; font-size: 1.4rem !important;
     font-weight: 700; font-family: 'IBM Plex Mono', monospace !important;
 }
 .section-header {
-    color: #1e5fb4; font-family: 'IBM Plex Mono', monospace;
+    color: #0d3b7a; font-family: 'IBM Plex Mono', monospace;
     font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.18em;
-    border-bottom: 1px solid #c8bfaa; padding-bottom: 0.3rem; margin-bottom: 1rem;
+    border-bottom: 1px solid #d0ccc4; padding-bottom: 0.3rem; margin-bottom: 1rem;
 }
-.masthead { border-bottom: 3px solid #1a1a1a; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-.masthead-eyebrow { color: #1e5fb4; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.4rem; }
-.masthead-title { color: #1a1a1a; font-family: 'IBM Plex Sans', sans-serif; font-size: 2rem; font-weight: 700; }
-.masthead-sub { color: #5a5040; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; margin-top: 0.3rem; }
+.masthead { border-bottom: 3px solid #0d1b2e; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+.masthead-eyebrow { color: #0d3b7a; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.4rem; }
+.masthead-title { color: #0d1b2e; font-family: 'IBM Plex Sans', sans-serif; font-size: 2rem; font-weight: 700; }
+.masthead-sub { color: #3a4a5a; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; margin-top: 0.3rem; }
 .statement-box {
-    background: #ede8dd; border: 1px solid #c8bfaa; border-left: 4px solid #1e5fb4;
+    background: #f0ece4; border: 1px solid #d0ccc4; border-left: 4px solid #0d3b7a;
     padding: 1rem 1.2rem; border-radius: 2px; font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem; color: #2a2a2a; line-height: 1.7; margin: 0.5rem 0;
+    font-size: 0.78rem; color: #0d1b2e; line-height: 1.7; margin: 0.5rem 0;
 }
 .hawk-box { border-left-color: #c0392b !important; }
 .dove-box { border-left-color: #1a6b3c !important; }
-.footer-bar { border-top: 2px solid #1a1a1a; padding-top: 0.6rem; color: #7a6f60; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; margin-top: 1.5rem; }
+.footer-bar { border-top: 2px solid #1a1a1a; padding-top: 0.6rem; color: #5a6a7a; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; margin-top: 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -148,8 +148,8 @@ df['date_dt'] = pd.to_datetime(df['date'])
 df = df.sort_values('date_dt')
 
 # ── PALETTE ──────────────────────────────────────────────────────────────────
-BG='#f5f0e8'; BG2='#ede8dd'; BLUE='#1e5fb4'; DARK='#1a1a1a'
-MUTED='#7a6f60'; GRID='#d8d0c0'; RED='#c0392b'; GREEN='#1a6b3c'
+BG='#faf8f4'; BG2='#f0ece4'; BLUE='#0d3b7a'; DARK='#0d1b2e'
+MUTED='#7a6f60'; GRID='#d8d4cc'; RED='#c0392b'; GREEN='#1a6b3c'
 CB_COLOURS = {'Fed':'#1e5fb4','BoE':'#c0392b','MAS':'#1a6b3c','ECB':'#e67e22','RBI':'#8a6e00'}
 
 # ── MASTHEAD ──────────────────────────────────────────────────────────────────
