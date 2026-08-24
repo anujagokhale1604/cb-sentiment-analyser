@@ -163,12 +163,30 @@ st.markdown("""
 
 # ── LATEST READINGS ────────────────────────────────────────────────────────────
 st.markdown("<div class='section-header'>[ 01 ] Latest Readings — Most Recent Statement Per Bank</div>", unsafe_allow_html=True)
-cols = st.columns(5)
-for i, cb in enumerate(['Fed','BoE','MAS','ECB','RBI']):
+
+cards_html = "<div style='display:grid; grid-template-columns: repeat(5,1fr); gap:1rem; margin-bottom:1rem;'>"
+for cb in ['Fed','BoE','MAS','ECB','RBI']:
     latest = df[df['cb']==cb].sort_values('date_dt').iloc[-1]
     lbl, col = latest['label'], latest['colour']
-    with cols[i]:
-        st.metric(f"{cb} ({latest['date']})", f"{latest['score']:+.0f}", lbl)
+    score_str = f"{latest['score']:+.0f}"
+    cards_html += f"""
+    <div style='background:#f0ece4; border:1px solid #d0ccc4; border-top:3px solid #0d3b7a;
+                padding:1rem; border-radius:2px;'>
+        <div style='color:#3a4a5a; font-family:IBM Plex Mono,monospace; font-size:0.62rem;
+                    text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.4rem;'>
+            {cb} · {latest['date']}
+        </div>
+        <div style='color:#0d1b2e; font-family:IBM Plex Mono,monospace; font-size:1.6rem;
+                    font-weight:700; line-height:1.1;'>
+            {score_str}
+        </div>
+        <div style='color:{col}; font-family:IBM Plex Mono,monospace; font-size:0.75rem;
+                    font-weight:600; margin-top:0.3rem;'>
+            {lbl}
+        </div>
+    </div>"""
+cards_html += "</div>"
+st.markdown(cards_html, unsafe_allow_html=True)
 
 st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
