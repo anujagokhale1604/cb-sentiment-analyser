@@ -283,7 +283,7 @@ with col2:
             <b>Verdict:</b> <span style='color:{col};font-weight:700;'>{lbl}</span><br>
             <b>Score:</b> {score:+.1f} / 100<br>
             <b>Hawkish signals:</b> {hawk} · <b>Dovish signals:</b> {dove}<br><br>
-            <span style='color:#7a6f60;font-size:0.72rem;'>Methodology: custom lexicon (70%) + TextBlob sentiment (30%)</span>
+            
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -325,6 +325,6 @@ st.markdown("""
 <div class='footer-bar'>
 Built by Anuja A. Gokhale · MA Applied Economics, NUS (Merit Scholar) · anujagokhale1604@gmail.com · 
 Methodology: custom hawkish/dovish lexicon (70 terms) + TextBlob sentiment analysis (30%) · 
-Statements sourced from official central bank publications · August 2026
+Statements sourced from official central bank publications 
 </div>
 """, unsafe_allow_html=True)
