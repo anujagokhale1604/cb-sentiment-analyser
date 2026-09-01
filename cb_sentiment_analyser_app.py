@@ -4,11 +4,9 @@ import numpy as np
 import plotly.graph_objects as go
 from textblob import TextBlob
 import re
-from datetime import datetime
 
 st.set_page_config(page_title="CB Sentiment Analyser", page_icon="🏦", layout="wide")
 
-# ── STYLING ───────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
@@ -30,7 +28,6 @@ div[data-testid="stMetric"] * { color: #0d1b2e !important; }
     color: #0d1b2e !important; font-size: 1.4rem !important;
     font-weight: 700; font-family: 'IBM Plex Mono', monospace !important;
 }
-
 .section-header {
     color: #0d3b7a; font-family: 'IBM Plex Mono', monospace;
     font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.18em;
@@ -49,9 +46,9 @@ div[data-testid="stMetric"] * { color: #0d1b2e !important; }
 .hawk-box { border-left-color: #c0392b !important; background: #fdf5f4 !important; }
 .dove-box { border-left-color: #1a6b3c !important; background: #f3faf5 !important; }
 
-.sentence-hawk { background: #fde8e5; border-left: 3px solid #c0392b; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; }
-.sentence-dove { background: #e8f5ec; border-left: 3px solid #1a6b3c; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; }
-.sentence-neutral { background: #f0ece4; border-left: 3px solid #aaa; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; }
+.sentence-hawk { background: #fde8e5; border-left: 3px solid #c0392b; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; color: #0d1b2e; }
+.sentence-dove { background: #e8f5ec; border-left: 3px solid #1a6b3c; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; color: #0d1b2e; }
+.sentence-neutral { background: #f0ece4; border-left: 3px solid #aaaaaa; padding: 0.4rem 0.7rem; margin: 0.3rem 0; border-radius: 2px; font-size: 0.82rem; color: #0d1b2e; }
 
 .divergence-box {
     background: #fff8e8; border: 1px solid #f0c060; border-left: 4px solid #e67e22;
@@ -71,9 +68,8 @@ div[data-testid="stMetric"] * { color: #0d1b2e !important; }
 .hist-box {
     background: #f0ece4; border: 1px solid #d0ccc4;
     padding: 0.8rem 1rem; border-radius: 4px; font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.78rem; color: #0d1b2e; line-height: 1.6; margin: 0.3rem 0;
+    font-size: 0.78rem; color: #0d1b2e; line-height: 1.6; margin-top: 0.8rem;
 }
-
 .stTextArea textarea,
 .stTextArea > div > div > textarea,
 div[data-baseweb="textarea"] textarea {
@@ -113,7 +109,10 @@ div[data-baseweb="textarea"] { background-color: #ffffff !important; }
     padding: 0.3rem 0.7rem; font-family: 'IBM Plex Mono', monospace;
     font-size: 0.72rem; color: #0d3b7a; text-decoration: none;
 }
-.footer-bar { border-top: 2px solid #0d1b2e; padding-top: 0.6rem; color: #5a6a7a; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; margin-top: 1.5rem; }
+.footer-bar {
+    border-top: 2px solid #0d1b2e; padding-top: 0.6rem; color: #5a6a7a;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; margin-top: 1.5rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -157,41 +156,32 @@ def lexicon_score(text):
     combined = raw * 0.7 + (-tb) * 0.3
     return round(combined * 100, 1), hawk_hits, dove_hits
 
-def finbert_score(text):
-    """Score using FinBERT — returns score in -100 to +100 range"""
+def finbert_score_text(text):
     try:
-        # Split into chunks of 400 chars max for FinBERT
         chunks = [text[i:i+400] for i in range(0, len(text), 400)]
         scores = []
-        for chunk in chunks[:5]:  # max 5 chunks
+        for chunk in chunks[:5]:
             result = finbert(chunk, truncation=True, max_length=512)[0]
             label_map = {'positive': -50, 'negative': 50, 'neutral': 0}
-            # In CB context: positive sentiment = dovish, negative = hawkish
             scores.append(label_map.get(result['label'], 0) * result['score'])
         return round(np.mean(scores), 1)
     except:
         return None
 
 def score_statement(text):
-    lex_score, hawk, dove = lexicon_score(text)
+    lex, hawk, dove = lexicon_score(text)
     if USE_FINBERT:
-        fb = finbert_score(text)
+        fb = finbert_score_text(text)
         if fb is not None:
-            final = lex_score * 0.5 + fb * 0.5
-            return round(final, 1), hawk, dove
-    return lex_score, hawk, dove
-
-def score_sentence(sent):
-    """Score a single sentence"""
-    s, h, d = lexicon_score(sent)
-    return s, h, d
+            return round(lex * 0.5 + fb * 0.5, 1), hawk, dove
+    return lex, hawk, dove
 
 def label_fn(score):
-    if score > 30:   return "🦅 Hawkish", "#c0392b"
-    elif score > 10: return "↗ Mildly Hawkish", "#e67e22"
-    elif score > -10:return "⚖ Neutral", "#1e5fb4"
-    elif score > -30:return "↘ Mildly Dovish", "#2980b9"
-    else:            return "🕊 Dovish", "#1a6b3c"
+    if score > 30:    return "🦅 Hawkish", "#c0392b"
+    elif score > 10:  return "↗ Mildly Hawkish", "#e67e22"
+    elif score > -10: return "⚖ Neutral", "#1e5fb4"
+    elif score > -30: return "↘ Mildly Dovish", "#2980b9"
+    else:             return "🕊 Dovish", "#1a6b3c"
 
 def plain_english(score):
     if score > 30:
@@ -260,7 +250,6 @@ statements = {
     ]
 }
 
-# Score all statements
 for cb, stmts in statements.items():
     for s in stmts:
         s['score'], s['hawk'], s['dove'] = score_statement(s['text'])
@@ -276,9 +265,10 @@ BG='#faf8f4'; BG2='#f0ece4'; NAVY='#0d3b7a'; DARK='#0d1b2e'; MUTED='#5a6a7a'; GR
 CB_COLOURS = {'Fed':'#1e5fb4','BoE':'#c0392b','MAS':'#1a6b3c','ECB':'#e67e22','RBI':'#8a6e00'}
 
 # ── MASTHEAD ──────────────────────────────────────────────────────────────────
+model_label = 'FinBERT + Lexicon' if USE_FINBERT else 'Lexicon Model'
 st.markdown(f"""
 <div class='masthead'>
-  <div class='masthead-eyebrow'>GOKHALE MACRO RESEARCH · NLP ANALYSIS · {'FinBERT + Lexicon' if USE_FINBERT else 'Lexicon Model'} · 2026</div>
+  <div class='masthead-eyebrow'>GOKHALE MACRO RESEARCH · NLP ANALYSIS · {model_label} · 2026</div>
   <div class='masthead-title'>🏦 Central Bank Communication Sentiment Analyser</div>
   <div class='masthead-sub'>Hawkish/dovish scoring of Fed · BoE · MAS · ECB · RBI policy statements · 2022–2025</div>
 </div>
@@ -341,62 +331,50 @@ st.plotly_chart(fig, use_container_width=True)
 # ── SECTION 03: DIVERGENCE ALERT ─────────────────────────────────────────────
 st.markdown("<div class='section-header'>[ 03 ] Cross-Bank Divergence Alert</div>", unsafe_allow_html=True)
 
-latest_scores = {}
-for cb in ['Fed','BoE','MAS','ECB','RBI']:
-    latest_scores[cb] = df[df['cb']==cb].sort_values('date_dt').iloc[-1]['score']
-
+latest_scores = {cb: df[df['cb']==cb].sort_values('date_dt').iloc[-1]['score'] for cb in ['Fed','BoE','MAS','ECB','RBI']}
 max_cb = max(latest_scores, key=latest_scores.get)
 min_cb = min(latest_scores, key=latest_scores.get)
 divergence = latest_scores[max_cb] - latest_scores[min_cb]
-
 max_lbl, max_col = label_fn(latest_scores[max_cb])
 min_lbl, min_col = label_fn(latest_scores[min_cb])
 
 if divergence > 40:
-    box_class = 'divergence-box'
-    alert_icon = '⚠️'
-    alert_title = 'Significant Policy Divergence Detected'
-    alert_text = f"""
-    <b style='color:{max_col}'>{max_cb} ({max_lbl}, {latest_scores[max_cb]:+.0f})</b> and 
-    <b style='color:{min_col}'>{min_cb} ({min_lbl}, {latest_scores[min_cb]:+.0f})</b> are moving in 
-    opposite directions — a gap of {divergence:.0f} points. Diverging central bank stances typically 
-    put pressure on exchange rates: the currency of the more hawkish central bank tends to appreciate 
-    against the more dovish one. Capital tends to flow toward higher-yielding, tighter-policy economies.
-    """
+    st.markdown(f"""
+<div class='divergence-box'>
+<b>⚠️ Significant Policy Divergence Detected</b><br><br>
+<b style='color:{max_col}'>{max_cb} ({max_lbl}, {latest_scores[max_cb]:+.0f})</b> and
+<b style='color:{min_col}'>{min_cb} ({min_lbl}, {latest_scores[min_cb]:+.0f})</b> are moving in
+opposite directions — a gap of {divergence:.0f} points. Diverging central bank stances typically
+put pressure on exchange rates: the currency of the more hawkish central bank tends to appreciate
+against the more dovish one. Capital tends to flow toward higher-yielding, tighter-policy economies.
+</div>
+""", unsafe_allow_html=True)
 else:
-    box_class = 'align-box'
-    alert_icon = '✅'
-    alert_title = 'Central Banks Broadly Aligned'
-    alert_text = f"""
-    The spread between the most hawkish ({max_cb}, {latest_scores[max_cb]:+.0f}) and most dovish 
-    ({min_cb}, {latest_scores[min_cb]:+.0f}) central banks is {divergence:.0f} points — relatively 
-    narrow. When major central banks move in sync, exchange rate pressure is limited and global 
-    financial conditions tend to be more stable.
-    """
-
-st.markdown(f"""
-<div class='{box_class}'>
-<b>{alert_icon} {alert_title}</b><br><br>
-{alert_text}
+    st.markdown(f"""
+<div class='align-box'>
+<b>✅ Central Banks Broadly Aligned</b><br><br>
+The spread between the most hawkish (<b>{max_cb}, {latest_scores[max_cb]:+.0f}</b>) and most dovish
+(<b>{min_cb}, {latest_scores[min_cb]:+.0f}</b>) central banks is {divergence:.0f} points — relatively
+narrow. When major central banks move in sync, exchange rate pressure is limited and global
+financial conditions tend to be more stable.
 </div>
 """, unsafe_allow_html=True)
 
-# Divergence bar chart
 st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+
 fig2 = go.Figure()
 cbs_sorted = sorted(latest_scores.keys(), key=lambda x: latest_scores[x], reverse=True)
-colors = [CB_COLOURS[cb] for cb in cbs_sorted]
 fig2.add_trace(go.Bar(
     x=cbs_sorted,
     y=[latest_scores[cb] for cb in cbs_sorted],
-    marker_color=colors,
+    marker_color=[CB_COLOURS[cb] for cb in cbs_sorted],
     text=[f"{latest_scores[cb]:+.0f}" for cb in cbs_sorted],
     textposition='outside',
     hovertemplate='<b>%{x}</b><br>Score: %{y:+.0f}<extra></extra>'
 ))
 fig2.add_hline(y=0, line_dash='dot', line_color=MUTED, line_width=1)
 fig2.update_layout(
-    plot_bgcolor=BG, paper_bgcolor=BG, height=280,
+    plot_bgcolor=BG, paper_bgcolor=BG, height=260,
     font=dict(family='IBM Plex Mono', color=MUTED),
     xaxis=dict(gridcolor=GRID, tickfont=dict(size=11, color=DARK)),
     yaxis=dict(gridcolor=GRID, tickfont=dict(size=9, color=MUTED), range=[-100,100],
@@ -450,7 +428,10 @@ with col1:
         placeholder="Copy and paste any central bank policy statement here, then click Analyse...",
         label_visibility='collapsed'
     )
-    cb_name_input = st.text_input("Central bank / label (optional)", placeholder="e.g. Fed, BoE, MAS, ECB, RBI...")
+    cb_name_input = st.text_input(
+        "Central bank label (optional — for historical comparison)",
+        placeholder="e.g. Fed, BoE, MAS, ECB, RBI..."
+    )
 
 with col2:
     st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
@@ -463,36 +444,37 @@ with col2:
             box_class = 'hawk-box' if score > 10 else 'dove-box' if score < -10 else ''
             plain = plain_english(score)
             st.markdown(f"""
-            <div class='statement-box {box_class}'>
-            <b>Verdict:</b> <span style='color:{col};font-weight:700;'>{lbl}</span><br>
-            <b>Score:</b> {score:+.1f} / 100<br>
-            <b>Hawkish signals:</b> {hawk} · <b>Dovish signals:</b> {dove}
-            <div style='margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #d0ccc4;
-                        color:#0d1b2e;font-size:0.84rem;font-style:italic;font-weight:500;'>
-            {plain}
-            </div>
-            </div>
-            """, unsafe_allow_html=True)
+<div class='statement-box {box_class}'>
+<b>Verdict:</b> <span style='color:{col};font-weight:700;'>{lbl}</span><br>
+<b>Score:</b> {score:+.1f} / 100<br>
+<b>Hawkish signals:</b> {hawk} · <b>Dovish signals:</b> {dove}
+<div style='margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid #d0ccc4;
+            color:#0d1b2e;font-size:0.84rem;font-style:italic;font-weight:500;'>
+{plain}
+</div>
+</div>
+""", unsafe_allow_html=True)
 
             # Historical comparison
-            if cb_name_input.strip() and cb_name_input.strip() in statements:
-                cb_hist = df[df['cb']==cb_name_input.strip()].sort_values('score', ascending=False)
-                rank = sum(cb_hist['score'] >= score) + 1
+            cb_clean = cb_name_input.strip()
+            if cb_clean and cb_clean in statements:
+                cb_hist = df[df['cb']==cb_clean].sort_values('score', ascending=False).reset_index(drop=True)
+                rank = int((cb_hist['score'] >= score).sum()) + 1
                 total = len(cb_hist)
                 most_hawk = cb_hist.iloc[0]
                 most_dove = cb_hist.iloc[-1]
                 st.markdown(f"""
-                <div class='hist-box' style='margin-top:0.8rem;'>
-                <b>Historical context ({cb_name_input.strip()}):</b><br>
-                This statement ranks <b>#{rank} of {total}</b> statements by hawkishness.<br>
-                Most hawkish on record: {most_hawk['date']} ({most_hawk['score']:+.0f})<br>
-                Most dovish on record: {most_dove['date']} ({most_dove['score']:+.0f})
-                </div>
-                """, unsafe_allow_html=True)
+<div class='hist-box'>
+<b>Historical context ({cb_clean}):</b><br>
+This statement ranks <b>#{rank} of {total}</b> by hawkishness.<br>
+Most hawkish on record: {most_hawk['date']} ({most_hawk['score']:+.0f})<br>
+Most dovish on record: {most_dove['date']} ({most_dove['score']:+.0f})
+</div>
+""", unsafe_allow_html=True)
         else:
             st.info("Paste a statement in the box on the left, then click Analyse.")
 
-# ── SECTION 06: SENTENCE-LEVEL BREAKDOWN ─────────────────────────────────────
+# ── SECTION 06: SENTENCE BREAKDOWN ───────────────────────────────────────────
 if analyse_clicked and user_text.strip():
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
     st.markdown("<div class='section-header'>[ 06 ] Sentence-Level Breakdown — Which Lines Are Driving the Score</div>", unsafe_allow_html=True)
@@ -501,19 +483,16 @@ if analyse_clicked and user_text.strip():
     if sentences:
         html_parts = []
         for sent in sentences:
-            s_score, s_hawk, s_dove = score_sentence(sent)
+            s_score, _, _ = lexicon_score(sent)
             if s_score > 15:
-                cls = 'sentence-hawk'
-                icon = '🦅'
+                cls, icon = 'sentence-hawk', '🦅'
             elif s_score < -15:
-                cls = 'sentence-dove'
-                icon = '🕊'
+                cls, icon = 'sentence-dove', '🕊'
             else:
-                cls = 'sentence-neutral'
-                icon = '—'
-            html_parts.append(f"<div class='{cls}'>{icon} {sent}.</div>")
+                cls, icon = 'sentence-neutral', '—'
+            html_parts.append(f"<div class='{cls}'>{icon}&nbsp;&nbsp;{sent}.</div>")
         st.markdown("\n".join(html_parts), unsafe_allow_html=True)
-        st.caption("🦅 Red = hawkish signal · 🕊 Green = dovish signal · — Grey = neutral")
+        st.caption("🦅 Red = hawkish · 🕊 Green = dovish · — Grey = neutral")
 
 # ── SECTION 07: BROWSE ────────────────────────────────────────────────────────
 st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
@@ -545,10 +524,10 @@ This analyser captures MAS signals through S$NEER-specific vocabulary: "rate of 
 """, unsafe_allow_html=True)
 
 # ── FOOTER ────────────────────────────────────────────────────────────────────
+model_str = 'FinBERT (ProsusAI) + Custom Lexicon' if USE_FINBERT else 'Custom Hawkish/Dovish Lexicon'
 st.markdown(f"""
 <div class='footer-bar'>
 Built by Anuja A. Gokhale · MA Applied Economics, NUS (Merit Scholar) · anujagokhale1604@gmail.com ·
-Model: {'FinBERT (ProsusAI) + Custom Lexicon' if USE_FINBERT else 'Custom Hawkish/Dovish Lexicon'} ·
-Statements sourced from official central bank publications · August 2026
+Model: {model_str} · Statements sourced from official central bank publications · 2026
 </div>
 """, unsafe_allow_html=True)
